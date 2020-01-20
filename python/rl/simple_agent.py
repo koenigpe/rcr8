@@ -5,6 +5,8 @@ from keras.models import Sequential, load_model
 from keras.optimizers import Adam
 import numpy as np
 
+from rl.memory import Memory
+
 
 def get_net(lr, output_cnt, input_cnt , hidden1_cnt, hidden2_cnt, activation_fct='relu', loss='mse'):
     model = Sequential([
@@ -19,47 +21,7 @@ def get_net(lr, output_cnt, input_cnt , hidden1_cnt, hidden2_cnt, activation_fct
     return model
 
 
-class Memory(object):
-    def __init__(self, input_shape, n_actions):
-        self.mem_size = 1000000
-        self.cntr = 0
-        self.mem_state = np.zeros((self.mem_size, input_shape))
-        self.mem_next_state = np.zeros((self.mem_size, input_shape))
-        self.mem_action = np.zeros((self.mem_size, n_actions), dtype=np.int8)
-        self.mem_reward = np.zeros(self.mem_size)
-        self.mem_done = np.zeros(self.mem_size, dtype=np.float32)
-
-    def get_mem_state_history(self, history, idx):
-        h = [(x + self.mem_size) % self.mem_size for x in range(idx - history, idx, 1)]
-        return np.concatenate(self.mem_state[h, :])
-
-    def get_mem_next_state_history(self, history, idx):
-        h = [(x + self.mem_size) % self.mem_size for x in range(idx - history, idx, 1)]
-        return np.concatenate(self.mem_next_state[h, :])
-
-    def add(self, state, action, reward, next_state, done):
-        index = self.cntr % self.mem_size
-        self.mem_state[index] = state
-        self.mem_next_state[index] = next_state
-        actions = np.zeros(self.mem_action.shape[1])
-        actions[action] = 1.0
-        self.mem_action[index] = actions
-        self.mem_reward[index] = reward
-        self.mem_done[index] = 1 - done
-        self.cntr += 1
-
-    def get_sample(self, batch_size):
-        max_available = self.cntr-batch_size if self.cntr > self.mem_size -batch_size else self.cntr
-        batch = np.random.choice(np.arange(5, max_available), batch_size)
-        states = np.array([self.get_mem_state_history(5, x+1) for x in batch])
-        actions = self.mem_action[batch]
-        rewards = self.mem_reward[batch]
-        next_state = np.array([self.get_mem_next_state_history(5, x+1) for x in batch])
-        done = self.mem_done[batch]
-        return states, actions, rewards, next_state, done
-
-
-class Agent(object):
+class SimpleAgent(object):
     def __init__(self, lr, gamma, n_actions, epsilon, batch_size, epsilon_decay,  epsilon_min, file='_Agent.h5', restore=True):
         self.input_dims = 5
         self.action_space = [i for i in range(n_actions)]
@@ -69,14 +31,14 @@ class Agent(object):
         self.epsilon_min = epsilon_min
         self.batch_size = batch_size
         self.file = file
-        self.memory = Memory(self.input_dims, n_actions)
+        self.memory = Memory(self.input_dims, n_actions, input_history=4)
         self.net = get_net(lr, n_actions, self.input_dims*5, 25, 10)
 
         if restore:
             self.restore()
 
     def add_history(self, state):
-        return np.concatenate((self.memory.get_mem_state_history(4, self.memory.cntr), state))
+        return self.memory.add_state_history(state, self.memory.cntr)
 
     def choose_action(self, state):
         input_layer = self.add_history(state)[np.newaxis, :]

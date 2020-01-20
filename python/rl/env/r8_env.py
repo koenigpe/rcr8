@@ -2,14 +2,11 @@ import time
 
 import gym
 import numpy as np
-
 from r8 import R8
 from rl.env.r8_utils import action_to_movement, derive_reward
 
 
 class R8Env(gym.Env):
-    """Custom Environment that follows gym interface"""
-    metadata = {'render.modes': ['human']}
 
     def __init__(self, serial_port, baudrate, timeout, reward_delay_msec):
         super(R8Env, self).__init__()    # Define action and observation space
@@ -18,7 +15,6 @@ class R8Env(gym.Env):
         self.new_state = np.zeros(5)
         self.previous_action = (0, 0)
         self.reward = 0
-
 
     def step(self, action):
 

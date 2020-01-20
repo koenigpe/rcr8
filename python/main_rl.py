@@ -3,14 +3,14 @@ import time
 
 from rl.env.r8_env import R8Env
 from rl.env.r8_virtual_env import R8VirtualEnv
-from rl.simple_agent import Agent
+from rl.simple_agent import SimpleAgent
 
 if __name__ == '__main__':
 
     def train(env, eposodes):
 
-        agent = Agent(gamma=0.99, epsilon=0.1, lr=0.0005, epsilon_decay=0.9999,
-                      n_actions=7, batch_size=128, epsilon_min=0.01, restore=False)
+        agent = SimpleAgent(gamma=0.99, epsilon=0.1, lr=0.0005, epsilon_decay=0.9999,
+                            n_actions=7, batch_size=128, epsilon_min=0.01, restore=False)
         score_history = []
         start = time.time()
         episode = 0
@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 agent.save()
 
 
-    with R8VirtualEnv(enable_screen=True) as env:
+    with R8VirtualEnv(enable_screen=False) as env:
        train(env, 2500)
 
     #with R8Env(serial_port="/dev/rfcomm0", baudrate=9600, timeout=10, reward_delay_msec=50) as env:

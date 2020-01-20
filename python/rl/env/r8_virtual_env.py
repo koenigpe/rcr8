@@ -105,7 +105,7 @@ class R8VirtualEnv(gym.Env):
 
         steering, accel = action_to_movement(action)
         angle = steering * 5
-        x = accel * 10
+        x = accel * 25
 
         self.angle = (self.angle + angle) % 360
 
