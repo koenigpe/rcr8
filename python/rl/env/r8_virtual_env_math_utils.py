@@ -4,12 +4,6 @@ import time
 import numpy as np
 import pygame
 
-PIXEL_PER_METER = 500
-R8_LENGTH = round(PIXEL_PER_METER * (20 / 100))
-R8_WIDTH = round(PIXEL_PER_METER * (8 / 100))
-
-MAX_SENSOR_DISTANCE_METER = 2
-
 
 def np_set_zero_point(coords, zero_point):
     x = coords[:, 0] - zero_point[0]
@@ -54,9 +48,6 @@ def cart_to_polar(coords, zero_point):
     x = coords[0]
     y = coords[1]
     d = math.sqrt((x - zero_point[0]) ** 2 + (y - zero_point[1]) ** 2)
-    # atan nutzen
-    # x,y - zero point
-    # add degree based on delta values
     deg = math.degrees(math.atan((y - zero_point[1]) / (x - zero_point[0])))
     deg = deg + (180 if x - zero_point[0] < 0 and y - zero_point[1] > 0 else 0)
     deg = deg + (180 if x - zero_point[0] < 0 and y - zero_point[1] < 0 else 0)
@@ -75,8 +66,6 @@ def polar_to_cart(coords):
 
 
 if __name__ == '__main__':
-
-
 
 
     input = np.vstack([np.array((x, x)) for x in range(0, 3)])

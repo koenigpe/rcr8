@@ -34,9 +34,13 @@ class Memory(object):
         self.cntr += 1
 
     def add_state_history(self, state, idx):
+        if self.input_history == 0:
+            return state
         return np.concatenate((self.get_mem_history(idx, self.mem_state), state))
 
     def add_next_state_history(self, next_state, idx):
+        if self.input_history == 0:
+            return next_state
         return np.concatenate((self.get_mem_history(idx, self.mem_next_state), next_state))
 
     def get_current_idx(self):

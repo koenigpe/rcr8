@@ -1,17 +1,51 @@
-from r8 import R8
+import gym
 
+import numpy as np
+
+# sr04 constants
+FRONT_RIGHT = 0
+RIGHT = 1
+BACK = 2
+LEFT = 3
+FRONT_LEFT = 4
+
+# Steering constants
+TURN_LEFT = -1
+TURN_RIGHT = 1
+GO_AHEAD = 0
+
+# Acceleration constants
+FORWARDS = 1
+BACKWARDS = -1
+STOP = 0
+
+#Actions
+BACKWARD_TURN_LEFT = 0
+BACKWARDS_GO_AHEAD = 1
+BACKWARDS_TURN_RIGHT = 2
+FORWARDS_TURN_LEFT = 3
+FORWARDS_GO_AHEAD = 4
+FORWARDS_TURN_RIGHT = 5
+
+# Virtual env rules
+R8_WIDTH = 8
+R8_LENGTH = 20
+MAX_SENSOR_DISTANCE_CM = 100
+
+# Reward / done variables
 DONE_MAX_SCORE = 1000
 DONE_MIN_SCORE = -200
-
 I_DO_NOT_LIKE = -0.07
-
 BORDER_START = 50
-BORDER_END = 20
+BORDER_END = R8_LENGTH
 BORDER_MAX_NEGATIVE_REWARD = -100
 BORDER_REWARD_SLOPE = BORDER_MAX_NEGATIVE_REWARD / (BORDER_START - BORDER_END)
 assert(BORDER_REWARD_SLOPE <= 0.0)
 
-ACTIONS = 6
+
+
+ACTION_SPACE = gym.spaces.Discrete(7)
+OBSERVATION_SPACE = gym.spaces.Box(low=-MAX_SENSOR_DISTANCE_CM, high=MAX_SENSOR_DISTANCE_CM, dtype=np.int16, shape=(5,))
 
 
 def check_done(score, sensor_values, min_score=DONE_MIN_SCORE, max_score=DONE_MAX_SCORE, border_end=BORDER_END):
@@ -61,30 +95,33 @@ def derive_reward(sensor_values, steering, accel, steering_, accel_, score):
     return done, reward
 
 
+
+
+
 def action_to_movement(action):
     # action [0, 6]
-    steering = R8.GO_AHEAD
-    acceleration = R8.STOP
+    steering = GO_AHEAD
+    acceleration = STOP
 
-    if action == 0:
-        steering = R8.TURN_LEFT
-        acceleration = R8.BACKWARDS
-    if action == 1:
-        steering = R8.GO_AHEAD
-        acceleration = R8.BACKWARDS
-    if action == 2:
-        steering = R8.TURN_RIGHT
-        acceleration = R8.BACKWARDS
+    if action == BACKWARD_TURN_LEFT:
+        steering = TURN_LEFT
+        acceleration = BACKWARDS
+    if action == BACKWARDS_GO_AHEAD:
+        steering = GO_AHEAD
+        acceleration = BACKWARDS
+    if action == BACKWARDS_TURN_RIGHT:
+        steering = TURN_RIGHT
+        acceleration = BACKWARDS
 
-    if action == 3:
-        steering = R8.TURN_LEFT
-        acceleration = R8.FORWARDS
-    if action == 4:
-        steering = R8.GO_AHEAD
-        acceleration = R8.FORWARDS
-    if action == 5:
-        steering = R8.TURN_RIGHT
-        acceleration = R8.FORWARDS
+    if action == FORWARDS_TURN_LEFT:
+        steering = TURN_LEFT
+        acceleration = FORWARDS
+    if action == FORWARDS_GO_AHEAD:
+        steering = GO_AHEAD
+        acceleration = FORWARDS
+    if action == FORWARDS_TURN_RIGHT:
+        steering = TURN_RIGHT
+        acceleration = FORWARDS
 
     return steering, acceleration
 

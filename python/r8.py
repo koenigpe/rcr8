@@ -3,25 +3,10 @@ import struct
 import serial
 import numpy as np
 
+from rl.env.r8_physics import MAX_SENSOR_DISTANCE_CM, GO_AHEAD, STOP
+
 
 class R8():
-
-    # sr04 constants
-    FRONT_RIGHT = 0
-    RIGHT = 1
-    BACK = 2
-    LEFT = 3
-    FRONT_LEFT = 4
-
-    # Steering constants
-    TURN_LEFT = -1
-    TURN_RIGHT = 1
-    GO_AHEAD = 0
-
-    # Acceleration constants
-    FORWARDS = 1
-    BACKWARDS = -1
-    STOP = 0
 
     def __init__(self, serial_port, baudrate = 9600, timeout = 10):
         self.serial_port = serial_port
@@ -34,8 +19,10 @@ class R8():
 
     def get_state(self):
         self.connection.write(bytes(":d\r\n", "UTF-8"))
-        incomming = self.connection.read(5)
-        return np.array([int(i) for i in incomming])
+        incoming = self.connection.read(5)
+        state = np.array([int(i) for i in incoming])
+        state[state > MAX_SENSOR_DISTANCE_CM] = MAX_SENSOR_DISTANCE_CM
+        return state
 
     def send_steering(self, direction):
         self.connection.write(bytes(":s", "UTF-8"))
@@ -48,8 +35,8 @@ class R8():
         self.connection.write(bytes("\r\n", "UTF-8"))
 
     def full_stop(self):
-        self.send_steering(0)
-        self.send_accelleration(0)
+        self.send_steering(GO_AHEAD)
+        self.send_accelleration(STOP)
 
 
 
