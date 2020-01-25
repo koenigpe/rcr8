@@ -1,7 +1,7 @@
 
 ## Goal (work in progress)
 
-The goal of this project is to turn a rc car into a self driving car
+The goal of this project is to turn a rc car into a self driving car using reinforcement learning
 
 ![alt text](img/box.jpg "box.jpg")       
 
@@ -78,17 +78,14 @@ After the virtual pre training is done, it should be easier / faster for the Age
 [    ] Read the distances of the SR04 Sensors simultaneously
 This way the distance measurements will be much faster. In order to to so, the echo signal must not be measured using pulseIn. It should be a loop checking all echo pins for the state high.
 
-[    ] Add more Unit tests. There are some indications of issues:
-	- The average reward drops again after long trainings
-![alt text](img/reward_drop.png "Logo Title Text 1")
-
-
 [    ] In the current setup speed is a constant. It could be also a metric output of the model
 
 [    ] Add python library setup to the repo 
 
 [    ] Pre trained agents work very poor on the actual car.
 The order of the input an output vector of r8_env and r8_virtual_env seem to be fine. Maybe it just some fine tuning in the behaviour of the virtual environment.
+
+[    ] Move constants out of code
 
 [    ] Training for a long time results in:
 
