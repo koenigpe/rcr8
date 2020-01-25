@@ -11,6 +11,8 @@ BORDER_MAX_NEGATIVE_REWARD = -100
 BORDER_REWARD_SLOPE = BORDER_MAX_NEGATIVE_REWARD / (BORDER_START - BORDER_END)
 assert(BORDER_REWARD_SLOPE <= 0.0)
 
+ACTIONS = 6
+
 
 def check_done(score, sensor_values, min_score=DONE_MIN_SCORE, max_score=DONE_MAX_SCORE, border_end=BORDER_END):
     if score >= max_score or score <= min_score or min(sensor_values) < border_end:
