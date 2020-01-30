@@ -22,7 +22,7 @@ The goal of this project is to turn a rc car into a self driving car using reinf
 
 
 #### The wiring
-1) Open the rc car and remove everything but not the motors
+1) Open the rc car and remove everything but the motors
 1) Add the battery holder. It should be connected in series with the existing 3 battery holders to achieve a Voltage of 7.5V
 
 1) Add the Arduino. The VIN pin of the Arduino is used to power the Arduino using the 7.5 Volt. All components except of the L298 will be powered using the 5 Volt output of the Arduino.

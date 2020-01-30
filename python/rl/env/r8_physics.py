@@ -35,10 +35,10 @@ MAX_SENSOR_DISTANCE_CM = 100
 # Reward / done variables
 DONE_MAX_SCORE = 1000
 DONE_MIN_SCORE = -200
-I_DO_NOT_LIKE = -0.07
-BORDER_START = 50
+I_DO_NOT_LIKE = -0.25
+BORDER_START = 30
 BORDER_END = R8_LENGTH
-BORDER_MAX_NEGATIVE_REWARD = -100
+BORDER_MAX_NEGATIVE_REWARD = -50
 BORDER_REWARD_SLOPE = BORDER_MAX_NEGATIVE_REWARD / (BORDER_START - BORDER_END)
 assert(BORDER_REWARD_SLOPE <= 0.0)
 
@@ -88,7 +88,7 @@ def derive_reward(sensor_values, steering, accel, steering_, accel_, score):
 
     reward += get_acceleration_reward(accel)
     reward += get_steering_reward(steering)
-    reward += get_new_action_reward(steering, accel, steering_, accel_)
+    #reward += get_new_action_reward(steering, accel, steering_, accel_)
 
     done = check_done(score + reward, sensor_values)
 

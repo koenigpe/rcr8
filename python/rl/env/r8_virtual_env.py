@@ -3,7 +3,7 @@ import gym
 import pygame
 import numpy as np
 from rl.env.r8_physics import action_to_movement, derive_reward, ACTION_SPACE, OBSERVATION_SPACE, R8_LENGTH, BORDER_END, \
-    BORDER_START
+    BORDER_START, MAX_SENSOR_DISTANCE_CM
 from rl.env.r8_virtual_env_math_utils import np_cart_to_polar, np_rotate_polar
 
 
@@ -12,8 +12,8 @@ PIXEL_PER_METER = 500
 R8_WIDTH_PIXEL = round(PIXEL_PER_METER * (8 / 100))
 R8_LENGTH_PIXEL = round(PIXEL_PER_METER * (20 / 100))
 
-BARRIERS = 3
-BARRIER_SIZE_CM = 25
+BARRIERS = 2
+BARRIER_SIZE_CM = 20
 
 FPS = 60  # Frames per second.
 
@@ -34,10 +34,17 @@ class Color:
     ORANGE = (255, 165, 0)
 
 def to_pixel(cm, ppm = PIXEL_PER_METER):
-    return int(ppm * (cm / 100))
+    return int(cm * (ppm / 100))
 
 def to_cm(pix, ppm = PIXEL_PER_METER):
-    return int(pix * ppm/100)
+    cm = int(pix /( ppm/100))
+    if cm > MAX_SENSOR_DISTANCE_CM:
+        return 100
+    else:
+        return cm
+
+def to_cm_norm(pix):
+    return to_cm(pix) / MAX_SENSOR_DISTANCE_CM
 
 class R8VirtualEnv(gym.Env):
 
@@ -55,7 +62,7 @@ class R8VirtualEnv(gym.Env):
         self.position = (int(self.screen_size[0] / 2), int(self.screen_size[1] / 2))
         self.angle = random.randint(0, 360)
         self.reward = 0
-        self.state = np.zeros(ACTION_SPACE.n)
+        self.state = np.zeros(OBSERVATION_SPACE.shape[0])
         self.previous_action = (0, 0)
         self.enable_screen = enable_screen
         self.action_space = ACTION_SPACE
@@ -78,7 +85,7 @@ class R8VirtualEnv(gym.Env):
         self.area = np.concatenate((self.generate_border(), self.generate_barrier(BARRIERS, self.barrier_size)))
 
     def generate_border(self):
-        grid = [int(x) for x in np.linspace(SCREEN_BORDER_PIXEl, self.screen_size[0] - SCREEN_BORDER_PIXEl, 250)]
+        grid = [int(x) for x in np.linspace(SCREEN_BORDER_PIXEl, self.screen_size[0] - SCREEN_BORDER_PIXEl, 500)]
 
         border = np.array([(SCREEN_BORDER_PIXEl, x) for x in grid] + \
                           [(self.screen_size[0] - SCREEN_BORDER_PIXEl, x) for x in grid] + \
@@ -89,7 +96,7 @@ class R8VirtualEnv(gym.Env):
 
     def generate_barrier(self, cnt, size):
         blocks = (np.random.rand(cnt, 2) * self.screen_size[0]).astype(int)
-        block_space = int(size / 7)
+        block_space = int(size / 50)
 
         blocks_x = blocks[:, 0]
         blocks_y = blocks[:, 1]
@@ -136,7 +143,7 @@ class R8VirtualEnv(gym.Env):
 
         steering, accel = action_to_movement(action)
         angle = steering * 5
-        x = accel * 25
+        x = accel * 20
 
         self.angle = (self.angle + angle) % 360
 
@@ -161,6 +168,9 @@ class R8VirtualEnv(gym.Env):
             pygame.display.update()
 
         return self.state, reward, done, {}
+
+    def screen_shot(self, path):
+         pygame.image.save(self.screen, path)
 
     def render(self, mode='human', close=False):
         # Render the environment to the screen
@@ -219,14 +229,15 @@ class R8VirtualEnv(gym.Env):
 
         if self.enable_screen:
             min_measured_dirstance = int(min(s0, s1, s2, s3, s4))
-            pygame.draw.circle(self.screen, self.distance_to_color(min_measured_dirstance), ( int(self.position[0]), int(self.position[1])), int(min(s0, s1, s2, s3, s4)), 2)
+            pygame.draw.circle(self.screen, self.distance_to_color(min_measured_dirstance), ( int(self.position[0]), int(self.position[1])), int(min(s0, s1, s2, s3, s4)), 1)
 
-        return np.array((to_cm(s0), to_cm(s1), to_cm(s2), to_cm(s3), to_cm(s4))), done_distance
+        return np.array((to_cm_norm(s0), to_cm_norm(s1), to_cm_norm(s2), to_cm_norm(s3), to_cm_norm(s4))), done_distance
 
 
 if __name__ == '__main__':
 
-    env = R8VirtualEnv(True)
-    while True:
-        env.step(random.randint(0, 5))
-
+   # env = R8VirtualEnv(True)
+    #while True:
+     #   env.step(random.randint(0, 5))
+   print(to_cm(to_pixel(50)))
+   print(to_cm(1000))

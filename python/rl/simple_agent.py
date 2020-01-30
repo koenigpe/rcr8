@@ -24,7 +24,7 @@ def get_net(lr, output_cnt, input_cnt , hidden1_cnt, hidden2_cnt, activation_fct
 
 class SimpleAgent(object):
     def __init__(self, lr, gamma, n_actions, epsilon, batch_size, epsilon_decay, epsilon_min, restore=True):
-        self.input_history = 0
+        self.input_history = 1
         self.input_dims = 5
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
@@ -35,7 +35,7 @@ class SimpleAgent(object):
         self.agent_file = "_Agent.h5"
         self.memory_file = "memory.pkl"
         self.memory = Memory(self.input_dims, n_actions, input_history=self.input_history)
-        self.net = get_net(lr, n_actions, self.input_dims* (self.input_history+1), 25, 10)
+        self.net = get_net(lr, n_actions, self.input_dims* (self.input_history+1), 256, 256)
 
         if restore:
             self.restore()
@@ -51,7 +51,7 @@ class SimpleAgent(object):
         else:
             actions = self.net.predict(input_layer)
             action = np.argmax(actions)
-        return action
+        return action.astype(np.int8)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.add(state, action, reward, next_state, done)

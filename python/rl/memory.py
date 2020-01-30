@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Memory(object):
-    def __init__(self, input_shape, n_actions, mem_size=1000000, input_history = 5):
+    def __init__(self, input_shape, n_actions, mem_size=10000, input_history = 5):
         self.mem_size = mem_size
         self.input_history = input_history
         self.cntr = 0

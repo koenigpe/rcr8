@@ -22,6 +22,7 @@ class R8():
         incoming = self.connection.read(5)
         state = np.array([int(i) for i in incoming])
         state[state > MAX_SENSOR_DISTANCE_CM] = MAX_SENSOR_DISTANCE_CM
+        state = state / MAX_SENSOR_DISTANCE_CM
         return state
 
     def send_steering(self, direction):
