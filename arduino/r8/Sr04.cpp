@@ -6,6 +6,7 @@
 #include "Arduino.h"
 #include "Sr04.h"
 
+
 Sr04::Sr04(int sensors[SENSOR_COUNT][2])
 {
   for(int i=0; i <SENSOR_COUNT; i++){
@@ -41,32 +42,41 @@ void Sr04::_sr04SendTrigger(int pin){
 }
 
 
-// NOT yet working!!
+// ToDo: Test
 void Sr04::sr04GetDistance(int *buf, unsigned long timeout) {
-  // Send trigger on one sensor
-  int _default = 2 *round( MAX_DISTANCE_METER/ SPEED_OF_SOUND_M_MSEC) *1000;
-  int done = 0;
 
-  int distances[SENSOR_COUNT];
-  for (int s=0; s<SENSOR_COUNT; s++){
-    buf[s] = _default;
-  }
+  int sensors_measured = 0;
+  int _default = timeout *0.034/2;
+
+  boolean is_high[SENSOR_COUNT];
+
+  SENSOR_LOOP(
+    buf[sensor] = _default;
+    is_high[sensor] = false;
+  )
   
   _sr04SendTrigger(_sensors[0][TRIGGER]);
-  unsigned long start = micros();
-  while(start + timeout > micros()  && done <= 5){
-      
-    for(int s=0; s < SENSOR_COUNT; s++){
-      if (digitalRead(_sensors[s][ECHO]) == HIGH && buf[s] == _default){
-        buf[s] = round((micros() - start)*0.0171);
-        done +=1;
+  
+  unsigned long timeout_start = micros();
+  unsigned long start_measurement;
+
+  while( !(IS_TIMEOUT) && sensors_measured < SENSOR_COUNT ){
+     // Catch high 
+     SENSOR_LOOP(
+      if (!is_high[sensor] && digitalRead(_sensors[sensor][ECHO]) ){
+        start_measurement=micros();
+        is_high[sensor]=true;
       }
-    }
-    
+      // Catch low
+      if (is_high[sensor] && buf[sensor] == _default && !digitalRead(_sensors[sensor][ECHO])){
+        buf[sensor] = (micros() - start_measurement)*0.034/2;
+        sensors_measured++; 
+      }
+     )       
   }
+
   delay(_sleep);
 
-  
 }
 
 
@@ -76,8 +86,8 @@ int Sr04::sr04GetDistance(int sensor, unsigned long timeout) {
   int pulseDuration = pulseIn(_sensors[sensor][ECHO], HIGH, timeout);
   delay(_sleep);
   if (pulseDuration==0){
-    pulseDuration = 2 *round( MAX_DISTANCE_METER/ SPEED_OF_SOUND_M_MSEC) *1000;
+    pulseDuration = timeout;
   }
-  return round(pulseDuration * 0.0171);
+  return round(pulseDuration *0.034/2);
 
 }

@@ -14,6 +14,10 @@
 #define SPEED_OF_SOUND_M_MSEC 0.343
 #define MIN_DISTANCE_BETWEEN_MEASUREMENTS_M 8
 #define MAX_DISTANCE_METER 2
+#define IS_TIMEOUT micros() > timeout_start + timeout
+#define SENSOR_LOOP(cmd) for (int sensor = 0; sensor < SENSOR_COUNT; sensor++){ \
+    cmd \
+  }
 
 class Sr04
 {

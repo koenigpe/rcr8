@@ -106,7 +106,7 @@ void processSteering(){
 void sensorUpdate(){
 
 
- // sr04.sr04GetDistance(distances);
+  //sr04.sr04GetDistance(distances);
   for (int s=0; s<5; s++){
     distances[s] = sr04.sr04GetDistance(s);
     //sr04.sr04GetDistance(s)
@@ -123,8 +123,6 @@ void setup() {
   leds.initPins();
   sr04.initPins();
   hc06.begin(9600);
-
-
 
  // engine.testAccelleration();
  // engine.testSteering();
