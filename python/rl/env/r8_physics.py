@@ -30,17 +30,16 @@ FORWARDS_TURN_RIGHT = 5
 # Virtual env rules
 R8_WIDTH = 8
 R8_LENGTH = 20
-MAX_SENSOR_DISTANCE_CM = 100
+MAX_SENSOR_DISTANCE_CM = 150
 
 # Reward / done variables
-DONE_MAX_SCORE = 1000
-DONE_MIN_SCORE = -200
+DONE_MAX_SCORE = 100
+DONE_MIN_SCORE = -100
 I_DO_NOT_LIKE = -0.25
-BORDER_START = 30
 BORDER_END = R8_LENGTH
-BORDER_MAX_NEGATIVE_REWARD = -50
-BORDER_REWARD_SLOPE = BORDER_MAX_NEGATIVE_REWARD / (BORDER_START - BORDER_END)
-assert(BORDER_REWARD_SLOPE <= 0.0)
+BORDER_MAX_NEGATIVE_REWARD = -10
+#BORDER_REWARD_SLOPE = BORDER_MAX_NEGATIVE_REWARD / (BORDER_START - BORDER_END)
+#assert(BORDER_REWARD_SLOPE <= 0.0)
 
 
 
@@ -55,12 +54,16 @@ def check_done(score, sensor_values, min_score=DONE_MIN_SCORE, max_score=DONE_MA
         return False
 
 
-def get_border_distance_reward(closest_distance, border_reward_slope=BORDER_REWARD_SLOPE, border_start=BORDER_START):
-    is_to_close = closest_distance < border_start
-    return int(is_to_close) * ((border_start - closest_distance) * border_reward_slope)
+def get_border_distance_reward(closest_distance):
+    #is_to_close = closest_distance < border_start
+    #return int(is_to_close) * ((border_start - closest_distance) * border_reward_slope)
+    if closest_distance <BORDER_END:
+        return BORDER_MAX_NEGATIVE_REWARD
+    else:
+        return 0
 
 
-def get_acceleration_reward(acceleration, reward_go_ahead = 1,reward_backwards = 0.1, reward_stop=I_DO_NOT_LIKE):
+def get_acceleration_reward(acceleration, reward_go_ahead = 1,reward_backwards = -0.75, reward_stop=I_DO_NOT_LIKE):
     if acceleration == 1:
         return reward_go_ahead
     if acceleration == -1:
@@ -77,8 +80,9 @@ def get_steering_reward(steering, i_do_not_like=I_DO_NOT_LIKE):
 
 
 def get_new_action_reward(steering, accel, steering_, accel_, i_do_not_like=I_DO_NOT_LIKE):
-    if steering != steering_ or accel != accel_:
-        return i_do_not_like
+    #if steering != steering_ or accel != accel_:
+    if accel != accel_:
+        return i_do_not_like * 5
     else:
         return 0
 
@@ -88,7 +92,7 @@ def derive_reward(sensor_values, steering, accel, steering_, accel_, score):
 
     reward += get_acceleration_reward(accel)
     reward += get_steering_reward(steering)
-    #reward += get_new_action_reward(steering, accel, steering_, accel_)
+    reward += get_new_action_reward(steering, accel, steering_, accel_)
 
     done = check_done(score + reward, sensor_values)
 
@@ -128,19 +132,9 @@ def action_to_movement(action):
 
 if __name__ == '__main__':
 
-    assert(get_border_distance_reward(1100, -0.1, 10) == 0)
-    assert(get_border_distance_reward(11, -0.1, 10) == 0)
-    assert(get_border_distance_reward(9, -0.1, 10) == -0.1 )
-    assert(get_border_distance_reward(1, -0.1, 10) == -0.9)
-    assert(get_border_distance_reward(0, -0.1, 10) == -1.0)
-
     assert(check_done(score = 100, sensor_values=[90], min_score=-100, max_score= 150, border_end=10) == False)
     assert(check_done(score = -100, sensor_values=[90], min_score=-100, max_score= 150, border_end=10) == True)
     assert(check_done(score = 150, sensor_values=[90], min_score=-100, max_score= 150, border_end=10) == True)
     assert(check_done(score = 100, sensor_values=[5], min_score=-100, max_score= 150, border_end=10) == True)
-
-    assert(get_acceleration_reward(1, 1, 0.1, -0.5) == 1)
-    assert(get_acceleration_reward(0, 1, 0.1, -0.5) == -0.5)
-    assert(get_acceleration_reward(-1, 1, 0.1, -0.5)== 0.1)
 
 

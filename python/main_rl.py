@@ -48,8 +48,9 @@ if __name__ == '__main__':
             if env.enable_screen and type(env).__name__ == "R8VirtualEnv":
                 env.screen_shot(get_filename(score, episode))
 
-            print(round(time.time()), "\t", episode,';%.2f' % score, "\t",
-                  round(mean_score, 2), "\t", agent.epsilon, "\t", round(duration, 0), "\t", round(moves / duration, 4), "\t", agent.memory.cntr, "\t", env.state)
+            if episode == 100:
+                print(round(time.time()), "\t", episode,';%.2f' % score, "\t",
+                      round(mean_score, 2), "\t", agent.epsilon, "\t", round(duration, 0), "\t", round(moves / duration, 4), "\t", agent.memory.cntr, "\t", env.state)
 
             if episode % 10 == 0:
                 agent.save()
@@ -60,9 +61,10 @@ if __name__ == '__main__':
   #  with DebugEnv() as env:
    #     train(env, 100000)
 
-    with R8VirtualEnv(enable_screen=True) as env:
-       train(env, 250)
+    for x in range(0, 5):
+        with R8VirtualEnv(enable_screen=False) as env:
+           train(env, 100)
 
-    #with R8Env(serial_port="/dev/rfcomm2", baudrate=9600, timeout=10, reward_delay_msec=0) as env:
-       #train(env, 5)
+    #with R8Env(serial_port="/dev/rfcomm3", baudrate=9600, timeout=10, reward_delay_msec=0) as env:
+      # train(env, 5)
 

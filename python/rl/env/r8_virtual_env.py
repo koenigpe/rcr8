@@ -2,8 +2,7 @@ import random
 import gym
 import pygame
 import numpy as np
-from rl.env.r8_physics import action_to_movement, derive_reward, ACTION_SPACE, OBSERVATION_SPACE, R8_LENGTH, BORDER_END, \
-    BORDER_START, MAX_SENSOR_DISTANCE_CM
+from rl.env.r8_physics import action_to_movement, derive_reward, ACTION_SPACE, OBSERVATION_SPACE, MAX_SENSOR_DISTANCE_CM
 from rl.env.r8_virtual_env_math_utils import np_cart_to_polar, np_rotate_polar
 
 
@@ -74,11 +73,6 @@ class R8VirtualEnv(gym.Env):
         self.generate_area()
 
     def distance_to_color(self, d):
-        if d > BORDER_START:
-            return Color.GREEN
-        if d > BORDER_END:
-            return (255, (BORDER_START - d)*5, 0)
-        else:
             return Color.RED
 
     def generate_area(self):
@@ -142,8 +136,8 @@ class R8VirtualEnv(gym.Env):
     def step(self, action):
 
         steering, accel = action_to_movement(action)
-        angle = steering * 5
-        x = accel * 20
+        angle = steering * 7
+        x = accel * 15
 
         self.angle = (self.angle + angle) % 360
 
@@ -211,7 +205,7 @@ class R8VirtualEnv(gym.Env):
 
         return closest_distance
 
-    def get_distance(self):
+    def get_distance(self, enable_noice=True):
 
         pol = np_rotate_polar(np_cart_to_polar(coords=self.area, zero_point=self.position, revert_y=True), self.angle)
 
@@ -231,7 +225,19 @@ class R8VirtualEnv(gym.Env):
             min_measured_dirstance = int(min(s0, s1, s2, s3, s4))
             pygame.draw.circle(self.screen, self.distance_to_color(min_measured_dirstance), ( int(self.position[0]), int(self.position[1])), int(min(s0, s1, s2, s3, s4)), 1)
 
-        return np.array((to_cm_norm(s0), to_cm_norm(s1), to_cm_norm(s2), to_cm_norm(s3), to_cm_norm(s4))), done_distance
+        state = np.array((to_cm_norm(s0), to_cm_norm(s1), to_cm_norm(s2), to_cm_norm(s3), to_cm_norm(s4)))
+
+
+        if enable_noice:
+            error_rate = 0.1
+            # 15% chance MAX_SENSOR_DISTANCE_CM
+            state[np.random.rand(5)<error_rate] = 1
+            # 10% chance [0, 5]
+            error =np.random.rand(5)
+            state[error<error_rate] = error[error<error_rate]/100
+
+
+        return state, done_distance
 
 
 if __name__ == '__main__':
